@@ -1,0 +1,45 @@
+FROM php:apache
+MAINTAINER martin scharm <https://binfalse.de/contact>
+
+
+# install tools necessary for the setup
+RUN apt-get update -q -y  \
+ && apt-get upgrade -q -y \
+ && apt-get install -y \
+            curl \
+            unzip \
+            zlib1g-dev \
+            libc-client-dev \
+            libpng-dev \
+            libjpeg62-turbo \
+            libjpeg62-turbo-dev \
+            libcurl4-openssl-dev \
+            libfreetype6-dev \
+            libmcrypt-dev \
+            libxml2-dev \
+            libpng-dev \
+            libzip-dev \
+            libkrb5-dev \
+            msmtp \
+            git \
+ && apt-get clean
+
+# install php stuff
+RUN docker-php-source extract \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+ && docker-php-ext-install -j$(nproc) zip gd curl pdo pdo_mysql pdo_pgsql ldap imap \
+ && docker-php-source delete
+
+# get lime survey and checkout latest tagged version 4
+RUN git clone https://github.com/LimeSurvey/LimeSurvey.git /var/www/html \
+ && cd /var/www/html \
+ && git checkout $(git tag | /bin/grep '^3' | sort -V | tail -1) \
+ && rm -rf /var/www/html/.git \
+ && chown -R www-data:www-data /var/www/html
+
+
+VOLUME ["/var/www/html/upload", "/var/www/html/plugins"]
+
+
+
