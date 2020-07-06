@@ -20,6 +20,8 @@ RUN apt-get update -q -y  \
             libpng-dev \
             libzip-dev \
             libkrb5-dev \
+            libpq-dev \
+            libldap2-dev \
             msmtp \
             git \
  && apt-get clean
